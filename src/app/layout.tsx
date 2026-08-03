@@ -50,7 +50,7 @@ export default async function RootLayout({ children }: PropsWithChildren) {
   return (
     <html
       lang={locale}
-      className={cn('font-sans', inter.variable, ysabeau.variable)}
+      className={cn('font-ysabeau', inter.variable, ysabeau.variable)}
       suppressHydrationWarning
     >
       <head>

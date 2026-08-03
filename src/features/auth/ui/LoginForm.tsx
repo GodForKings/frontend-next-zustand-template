@@ -18,7 +18,7 @@ export const LoginForm = () => {
   const router = useRouter()
   const setUser = useSessionStore((state) => state.setUser)
   const { mutate: login, isPending } = useLoginMutation()
-  const [showPassword, setShowPassword] = useState(false)
+  const [showPassword, setShowPassword] = useState<boolean>(false)
 
   const {
     register,
@@ -40,10 +40,7 @@ export const LoginForm = () => {
 
   return (
     <div
-      className={cn(
-        'flex min-h-dvh w-full flex-col items-center justify-center',
-        'bg-background font-ysabeau',
-      )}
+      className={cn('flex min-h-dvh w-full flex-col items-center justify-center', 'bg-background')}
     >
       <div className={cn('flex w-full max-w-125 flex-col items-center', 'px-4')}>
         <h2 className={cn('mb-12 text-center', 'text-[40px] font-semibold text-foreground')}>
