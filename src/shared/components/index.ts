@@ -1,4 +1,5 @@
 export * from './dialog'
+export * from './json-ld'
 export * from './modal'
 export * from './theme-switcher'
 export * from './toast'

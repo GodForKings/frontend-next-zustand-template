@@ -2,14 +2,14 @@ import { cn, LoadingDots } from '@/shared'
 
 export default function Loading() {
   return (
-    <div
+    <main
       className={cn(
-        'absolute inset-0',
-        'min-h-screen min-w-full',
-        'flex justify-center items-center',
+        'fixed inset-0 z-50',
+        'grid place-content-center',
+        'bg-background/80 backdrop-blur-md',
       )}
     >
-      <LoadingDots />
-    </div>
+      <LoadingDots size='lg' />
+    </main>
   )
 }

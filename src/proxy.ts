@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
-import { PAGES, PUBLIC_PAGES } from '@/shared'
+import { PROTECTED_ROUTES, PUBLIC_PAGES, UNAUTH_ONLY_PAGES } from '@/shared'
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -12,15 +12,13 @@ export function proxy(request: NextRequest) {
   }
 
   /** Флаг наличие сессионных токенов */
-  const hasAuthCookie = request.cookies.has('accessToken') && request.cookies.has('refreshToken')
+  const hasAuthCookie = request.cookies.has('refreshToken') || request.cookies.has('accessToken')
 
   /** Проверка на соответствие маршрута защищенным роутам */
-  const isProtectedRoute = Object.values(PAGES).some((route) => pathname.startsWith(route))
+  const isProtectedRoute = PROTECTED_ROUTES.some((route) => pathname.startsWith(route))
 
   /** Маршруты только для неавторизованных */
-  const isAuthRoute = [PUBLIC_PAGES.LOGIN, PUBLIC_PAGES.REG].some((route) =>
-    pathname.startsWith(route),
-  )
+  const isAuthRoute = UNAUTH_ONLY_PAGES.some((route) => pathname.startsWith(route))
 
   // Если нет куки и маршрут защищен - отправляем на логин
   if (!hasAuthCookie && isProtectedRoute) {
@@ -28,7 +26,7 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
-  // Если кука есть, а юзер идет на логин/регистрацию - отправляем на главную
+  // Если кука есть, а юзер идет на логин/регистрацию/восстановление кидаем на главную
   if (hasAuthCookie && isAuthRoute) {
     const mainUrl = new URL(PUBLIC_PAGES.MAIN, request.url)
     return NextResponse.redirect(mainUrl)

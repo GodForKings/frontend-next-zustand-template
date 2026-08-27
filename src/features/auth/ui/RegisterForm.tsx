@@ -1,22 +1,22 @@
 'use client'
 
-import { useState } from 'react'
+import { type FC, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Eye, EyeOff, Loader } from 'lucide-react'
+import { Eye, EyeOff, Loader2 } from 'lucide-react'
 
 import { useSessionStore } from '@/entities/session'
 
-import { cn, PUBLIC_PAGES, RegisterDto } from '@/shared'
-import { showSuccess } from '@/shared/components/toast'
+import { PUBLIC_PAGES, showSuccess } from '@/shared'
+import type { RegisterDto } from '@/shared/api/generated/data-contracts'
 import { Button, Input, Label } from '@/shared/ui/shadcn'
 
 import { useLoginMutation, useRegisterMutation } from '../api/queries'
 import { type RegisterFormData, registerSchema } from '../model/types'
 
-export const RegisterForm = () => {
-  const router = useRouter()
+export const RegisterForm: FC = () => {
   const setUser = useSessionStore((state) => state.setUser)
   const { mutate: registerMutation, isPending: isRegisterPending } = useRegisterMutation()
   const { mutate: login, isPending: isLoginPending } = useLoginMutation()
@@ -28,10 +28,15 @@ export const RegisterForm = () => {
     formState: { errors },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      password: '',
+    },
   })
 
   const onSubmit = (data: RegisterFormData) => {
-    registerMutation(data as RegisterDto, {
+    registerMutation(data satisfies RegisterDto, {
       onSuccess: () => {
         login(
           { email: data.email, password: data.password },
@@ -39,10 +44,10 @@ export const RegisterForm = () => {
             onSuccess: (loginRes) => {
               setUser(loginRes.data.user)
               showSuccess('Успешная регистрация и вход')
-              router.push(PUBLIC_PAGES.MAIN)
+              redirect(PUBLIC_PAGES.MAIN, 'replace')
             },
             onError: () => {
-              router.push(PUBLIC_PAGES.LOGIN)
+              redirect(PUBLIC_PAGES.LOGIN)
             },
           },
         )
@@ -53,118 +58,101 @@ export const RegisterForm = () => {
   const isPending = isRegisterPending || isLoginPending
 
   return (
-    <div
-      className={cn('flex flex-col items-center justify-center', 'bg-background min-h-dvh w-full')}
-    >
-      <div className={cn('flex w-full max-w-125 flex-col items-center', 'px-4')}>
-        <h2 className={cn('mb-12 text-center', 'text-[40px] font-semibold text-foreground')}>
-          Регистрация
-        </h2>
+    <div className='w-full space-y-6'>
+      <div className='space-y-2 text-center'>
+        <h1 className='text-2xl font-bold tracking-tight text-foreground'>Регистрация</h1>
+        <p className='text-sm text-muted-foreground'>Создание нового аккаунта</p>
+      </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className={cn('flex w-full flex-col items-center')}>
-          <div className={cn('relative mb-8 flex w-full max-w-98.75 flex-col')}>
-            <Label className={cn('mb-2 text-left', 'text-2xl font-semibold text-foreground')}>
-              Имя
-            </Label>
+      <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
+        <div className='space-y-2'>
+          <Label htmlFor='register-name'>Имя</Label>
 
+          <Input
+            {...register('name')}
+            id='register-name'
+            type='text'
+            autoComplete='name'
+            variant='main'
+            placeholder='Ваше имя'
+            aria-invalid={!!errors.name}
+            aria-describedby={errors.name ? 'register-name-error' : undefined}
+          />
+
+          {errors.name && (
+            <p id='register-name-error' className='text-xs text-destructive'>
+              {errors.name.message}
+            </p>
+          )}
+        </div>
+
+        <div className='space-y-2'>
+          <Label htmlFor='register-email'>Электронная почта</Label>
+
+          <Input
+            {...register('email')}
+            id='register-email'
+            type='email'
+            autoComplete='email'
+            variant='main'
+            placeholder='name@example.com'
+            aria-invalid={!!errors.email}
+            aria-describedby={errors.email ? 'register-email-error' : undefined}
+          />
+
+          {errors.email && (
+            <p id='register-email-error' className='text-xs text-destructive'>
+              {errors.email.message}
+            </p>
+          )}
+        </div>
+
+        <div className='space-y-2'>
+          <Label htmlFor='register-password'>Пароль</Label>
+
+          <div className='relative'>
             <Input
-              {...register('name')}
-              type='text'
-              variant='auth'
-              placeholder='Введите имя'
-              aria-invalid={!!errors.name}
+              {...register('password')}
+              id='register-password'
+              type={showPassword ? 'text' : 'password'}
+              autoComplete='new-password'
+              variant='main'
+              placeholder='Минимум 8 символов'
+              className='pr-9'
+              aria-invalid={!!errors.password}
+              aria-describedby={errors.password ? 'register-password-error' : undefined}
             />
-            {errors.name && (
-              <span
-                className={cn('absolute -bottom-6 left-0', 'text-xs font-medium text-destructive')}
-              >
-                {errors.name.message}
-              </span>
-            )}
-          </div>
-
-          <div className={cn('relative mb-8 flex w-full max-w-98.75 flex-col')}>
-            <Label className={cn('mb-2 text-left', 'text-2xl font-semibold text-foreground')}>
-              Эл. почта
-            </Label>
-
-            <Input
-              {...register('email')}
-              type='email'
-              variant='auth'
-              placeholder='Введите эл. почту'
-              aria-invalid={!!errors.email}
-            />
-
-            {errors.email && (
-              <span
-                className={cn('absolute -bottom-6 left-0', 'text-xs font-medium text-destructive')}
-              >
-                {errors.email.message}
-              </span>
-            )}
-          </div>
-
-          <div className={cn('relative mb-12 flex w-full max-w-98.75 flex-col')}>
-            <Label className={cn('mb-2 text-left', 'text-2xl font-semibold text-foreground')}>
-              Пароль
-            </Label>
-
-            <div className={cn('relative w-full')}>
-              <Input
-                {...register('password')}
-                type={showPassword ? 'text' : 'password'}
-                variant='auth'
-                placeholder='Введите пароль'
-                className={cn('pr-10')}
-                aria-invalid={!!errors.password}
-              />
-              <Button
-                type='button'
-                variant='ghost'
-                size='icon-sm'
-                onClick={() => setShowPassword(!showPassword)}
-                className={cn(
-                  'absolute right-1 top-1',
-                  'text-muted-foreground transition-colors hover:bg-transparent hover:text-foreground',
-                )}
-              >
-                {showPassword ? <EyeOff className='size-6' /> : <Eye className='size-6' />}
-              </Button>
-            </div>
-
-            {errors.password && (
-              <span
-                className={cn('absolute -bottom-6 left-0', 'text-xs font-medium text-destructive')}
-              >
-                {errors.password.message}
-              </span>
-            )}
-          </div>
-
-          <div className={cn('mt-2 flex w-full flex-col items-center gap-8')}>
-            <Button
-              type='submit'
-              disabled={isPending}
-              className={cn('h-9 w-fit min-w-36.5', 'px-6', 'text-2xl font-semibold')}
-            >
-              {isPending ? <Loader className='animate-spin' /> : 'Зарегистрироваться'}
-            </Button>
 
             <Button
               type='button'
-              variant='link'
-              onClick={() => router.push(PUBLIC_PAGES.LOGIN)}
-              className={cn(
-                'h-auto p-0 text-xl font-semibold text-foreground',
-                'hover:no-underline hover:opacity-70',
-              )}
+              variant='ghost'
+              size='icon-sm'
+              aria-label={showPassword ? 'Скрыть пароль' : 'Показать пароль'}
+              onClick={() => setShowPassword(!showPassword)}
+              className='absolute right-0 top-1/2 -translate-y-1/2'
             >
-              Уже зарегистрированы? Войти
+              {showPassword ? <EyeOff className='size-4' /> : <Eye className='size-4' />}
             </Button>
           </div>
-        </form>
-      </div>
+
+          {errors.password && (
+            <p id='register-password-error' className='text-xs text-destructive'>
+              {errors.password.message}
+            </p>
+          )}
+        </div>
+
+        <Button type='submit' disabled={isPending} className='w-full'>
+          {isPending ? <Loader2 className='size-4 animate-spin' /> : 'Зарегистрироваться'}
+        </Button>
+
+        <div className='flex items-center justify-center gap-1 text-sm text-muted-foreground pt-2'>
+          <span>Уже есть аккаунт?</span>
+          <Button asChild variant='link' size='sm' className='h-auto p-0 font-normal'>
+            <Link href={PUBLIC_PAGES.LOGIN}>Войти</Link>
+          </Button>
+        </div>
+      </form>
     </div>
   )
 }

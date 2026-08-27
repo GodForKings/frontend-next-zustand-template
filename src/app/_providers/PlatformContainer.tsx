@@ -1,26 +1,23 @@
 'use client'
 
-import type { FC, ReactNode } from 'react'
+import type { FC, PropsWithChildren } from 'react'
 import { Toaster } from 'react-hot-toast'
 
-import { SessionInitializer } from '@/features'
+import { Dialog, Modal, ToastCard } from '@/shared'
 
-import { cn, Dialog, Modal, ToastCard } from '@/shared'
-
+import { MaintenanceGuard } from './MaintenanceGuard'
 import { ReactQueryProvider } from './ReactQueryProvider'
+import { SessionInitializer } from './SessionInitializer'
 
-interface PlatformContainerProps {
-  children: ReactNode
-  className?: string
-}
-export const PlatformContainer: FC<PlatformContainerProps> = (props) => {
-  const { children, className } = props
-
+export const PlatformContainer: FC<PropsWithChildren> = ({ children }) => {
   return (
     <ReactQueryProvider>
       <SessionInitializer />
 
-      <div className={cn('relative mx-auto w-full', className)}>{children}</div>
+      <MaintenanceGuard>
+        <main className='relative mx-auto w-full'>{children}</main>
+      </MaintenanceGuard>
+
       {/* Глобальная modal */}
       <Modal />
       {/* Глобальный dialog */}

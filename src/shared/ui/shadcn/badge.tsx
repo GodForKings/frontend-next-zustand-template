@@ -5,19 +5,23 @@ import { Slot } from 'radix-ui'
 import { cn } from '@/shared'
 
 const badgeVariants = cva(
-  'group/badge inline-flex h-6 w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-4xl border border-transparent px-2 py-1 text-xs font-medium whitespace-nowrap transition-all focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none [&>svg]:size-3!',
+  cn(
+    'inline-flex items-center justify-center font-medium whitespace-nowrap',
+    'rounded-md border px-2 py-0.5 text-xs transition-colors',
+    'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+    '[&>svg]:size-3 [&>svg]:shrink-0 gap-1',
+  ),
   {
     variants: {
       variant: {
-        default: 'bg-primary text-primary-foreground [a]:hover:bg-primary/80',
-        secondary: 'bg-secondary text-secondary-foreground [a]:hover:bg-secondary/80',
-        destructive:
-          'bg-red-500/10 text-red-700 border-red-500/20 dark:bg-red-500/15 dark:text-red-400 dark:border-red-500/30 [a]:hover:bg-red-500/20',
-        active:
-          'bg-green-500/10 text-green-600 border-green-500/20 dark:bg-green-500/15 dark:text-green-400 dark:border-green-500/30 [a]:hover:bg-green-500/20',
-        outline: 'border-border text-foreground [a]:hover:bg-muted [a]:hover:text-muted-foreground',
-        ghost: 'hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted/50',
-        link: 'text-primary underline-offset-4 hover:underline',
+        default:
+          'border-transparent bg-primary text-primary-foreground shadow-xs hover:bg-primary/80',
+        secondary:
+          'border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80',
+        outline: 'border-border text-foreground hover:bg-muted',
+        destructive: 'border-transparent bg-destructive/10 text-destructive dark:bg-destructive/20',
+        success:
+          'border-transparent bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400',
       },
     },
     defaultVariants: {
@@ -34,14 +38,7 @@ function Badge({
 }: ComponentProps<'span'> & VariantProps<typeof badgeVariants> & { asChild?: boolean }) {
   const Comp = asChild ? Slot.Root : 'span'
 
-  return (
-    <Comp
-      data-slot='badge'
-      data-variant={variant}
-      className={cn(badgeVariants({ variant }), className)}
-      {...props}
-    />
-  )
+  return <Comp data-slot='badge' className={cn(badgeVariants({ variant }), className)} {...props} />
 }
 
 export { Badge, badgeVariants }

@@ -1,11 +1,17 @@
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { apiClient } from '@/shared/api'
-import type { LoginDto, RegisterDto } from '@/shared/api/generated/data-contracts'
+import type {
+  ForgotPasswordDto,
+  LoginDto,
+  RegisterDto,
+  ResetPasswordDto,
+} from '@/shared/api/generated/data-contracts'
 
 export const authKeys = {
   all: ['auth'] as const,
   profile: () => [...authKeys.all, 'profile'] as const,
+  validateResetToken: (token: string) => [...authKeys.all, 'validate-reset-token', token] as const,
 }
 
 export const useLoginMutation = () => {
@@ -21,8 +27,38 @@ export const useRegisterMutation = () => {
 }
 
 export const useLogoutMutation = () => {
+  const queryClient = useQueryClient()
+
   return useMutation({
     mutationFn: () => apiClient.authControllerLogout(),
+    onSuccess: () => {
+      queryClient.removeQueries({ queryKey: authKeys.all })
+    },
+  })
+}
+
+export const useForgotPasswordMutation = () => {
+  return useMutation({
+    mutationFn: (data: ForgotPasswordDto) => apiClient.authControllerForgotPassword(data),
+  })
+}
+
+export const useValidateResetTokenQuery = (token: string, enabled = true) => {
+  return useQuery({
+    queryKey: authKeys.validateResetToken(token),
+    queryFn: async () => {
+      const { data } = await apiClient.authControllerValidateResetToken({ token })
+      return data
+    },
+    retry: false,
+    enabled: Boolean(token) && enabled,
+    staleTime: 0,
+  })
+}
+
+export const useResetPasswordMutation = () => {
+  return useMutation({
+    mutationFn: (data: ResetPasswordDto) => apiClient.authControllerResetPassword(data),
   })
 }
 

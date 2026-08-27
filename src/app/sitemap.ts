@@ -1,7 +1,12 @@
 import type { MetadataRoute } from 'next'
 
+import { ENVIRONMENT_CONFIG } from '@/shared'
+
+export const dynamic = 'force-dynamic'
+export const revalidate = 3600
+
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'
+  const baseUrl = ENVIRONMENT_CONFIG.SITE_URL
 
   return [
     {
@@ -11,17 +16,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
     },
     {
-      url: `${baseUrl}/login`,
+      url: `${baseUrl}/about`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
-      priority: 0.5,
+      priority: 0.8,
     },
     {
-      url: `${baseUrl}/registration`,
+      url: `${baseUrl}/contacts`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
-      priority: 0.5,
+      priority: 0.8,
     },
-    // Динамические роуты (например, товары) можно добавлять сюда, делая запросы к API
+    // Динамические маршруты сущностей проекта добавляются здесь
   ]
 }

@@ -1,7 +1,8 @@
 import type { AxiosRequestConfig } from 'axios'
 import axios, { AxiosError, type AxiosResponse } from 'axios'
 
-import { ENVIRONMENT_CONFIG } from '@/shared'
+import { ENVIRONMENT_CONFIG, SYSTEM_SETTING_QUERY_KEYS } from '../config'
+import { getQueryClient } from './query-client'
 
 export interface RetryRequestConfig extends AxiosRequestConfig {
   _retry?: boolean
@@ -18,6 +19,7 @@ export const apiUrl = ENVIRONMENT_CONFIG.API_URL
 /** Axios instance */
 export const api = axios.create({
   baseURL: apiUrl,
+  timeout: 15000,
   paramsSerializer: { indexes: null },
   withCredentials: true,
 })
@@ -48,7 +50,7 @@ const processQueue = async (error: AxiosError | null) => {
   failedQueue = []
 }
 
-/** Refresh сессии при 401 */
+/** Refresh сессии при 401 и инвалидация при 503 */
 api.interceptors.response.use(
   (response: AxiosResponse) => response,
   async (error: AxiosError) => {
@@ -56,6 +58,18 @@ api.interceptors.response.use(
 
     if (!originalRequest) {
       return Promise.reject(error)
+    }
+
+    const isMaintenanceRequest = originalRequest.url?.includes('/api/system-settings/maintenance')
+
+    if (error.response?.status === 503 && !isMaintenanceRequest && typeof window !== 'undefined') {
+      const queryClient = getQueryClient()
+      const maintenanceKey = SYSTEM_SETTING_QUERY_KEYS.maintenance()
+      const queryState = queryClient.getQueryState(maintenanceKey)
+
+      if (queryState?.fetchStatus !== 'fetching') {
+        queryClient.invalidateQueries({ queryKey: maintenanceKey })
+      }
     }
 
     const isUnauthorized = error.response?.status === 401

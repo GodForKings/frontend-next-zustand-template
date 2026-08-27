@@ -1,5 +1,7 @@
 export * from './api/queries'
 export * from './model/types'
+export { ForgotPasswordForm } from './ui/ForgotPasswordForm'
 export { LoginForm } from './ui/LoginForm'
 export { RegisterForm } from './ui/RegisterForm'
-export { SessionInitializer } from './ui/SessionInitializer'
+export { ResetPasswordForm } from './ui/ResetPasswordForm'
+export { ResetPasswordView } from './ui/ResetPasswordView'

@@ -6,3 +6,4 @@ apiClient.instance = api
 
 export { api } from './api'
 export * from './generated/data-contracts'
+export * from './query-client'

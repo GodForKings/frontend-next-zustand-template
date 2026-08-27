@@ -1,60 +1,48 @@
 import type { PropsWithChildren } from 'react'
 import type { Metadata, Viewport } from 'next'
-import { Inter, Ysabeau_Infant } from 'next/font/google'
+import { Inter } from 'next/font/google'
 import { getLocale } from 'next-intl/server'
 
 import { I18nProvider, PlatformContainer } from '@/app/_providers'
 
-import { cn } from '@/shared'
-import { ThemeProvider, ThemeScript } from '@/shared'
+import {
+  BASE_METADATA,
+  cn,
+  generateOrganizationAndWebSiteJsonLd,
+  JsonLd,
+  ThemeProvider,
+  ThemeScript,
+} from '@/shared'
 
 import './_assets/globals.css'
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
-const ysabeau = Ysabeau_Infant({
+const inter = Inter({
   subsets: ['cyrillic', 'latin'],
-  variable: '--font-ysabeau',
-  weight: ['400', '600'],
+  variable: '--font-sans',
+  display: 'swap',
 })
 
-export const metadata: Metadata = {
-  title: 'MaisonPattern',
-  description: 'Приложение MaisonPattern',
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-    },
-  },
-  icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon.ico',
-    apple: '/favicon.ico',
-  },
-  appleWebApp: {
-    capable: true,
-    title: 'MaisonPattern',
-    statusBarStyle: 'default',
-  },
-}
+export const metadata: Metadata = BASE_METADATA
 
 export const viewport: Viewport = {
-  themeColor: '#09090b',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#09090b' },
+  ],
 }
 
 export default async function RootLayout({ children }: PropsWithChildren) {
   const locale = await getLocale()
+  const [organizationJsonLd, webSiteJsonLd] = generateOrganizationAndWebSiteJsonLd()
 
   return (
-    <html
-      lang={locale}
-      className={cn('font-ysabeau', inter.variable, ysabeau.variable)}
-      suppressHydrationWarning
-    >
+    <html lang={locale} className={cn('font-sans', inter.variable)} suppressHydrationWarning>
       <head>
         <ThemeScript />
+
+        <JsonLd data={organizationJsonLd} />
+
+        <JsonLd data={webSiteJsonLd} />
       </head>
 
       <body className={cn('text-foreground', 'isolate')}>

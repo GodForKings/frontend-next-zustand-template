@@ -1,2 +1,2 @@
-export { useInfiniteScroll } from './useInfiniteScroll'
-export { useMounted } from './useMounted'
+export * from './useInfiniteScroll'
+export * from './useMounted'
