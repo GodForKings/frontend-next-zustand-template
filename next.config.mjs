@@ -37,6 +37,10 @@ const nextConfig = {
   reactStrictMode: true,
   reactCompiler: true,
   typescript: { ignoreBuildErrors: true },
+  experimental: {
+    cpus: 1,
+    workerThreads: false,
+  },
 
   // Скрываем заголовок X-Powered-By: Next.js (не раскрываем стек)
   poweredByHeader: false,
