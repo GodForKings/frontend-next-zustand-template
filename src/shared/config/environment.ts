@@ -1,6 +1,9 @@
 export const ENVIRONMENT_CONFIG = {
   API_URL: process.env.NEXT_PUBLIC_API_URL,
   SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com',
+  YM_COUNTER_ID: process.env.NEXT_PUBLIC_YM_COUNTER_ID || '',
+  GA_ID: process.env.NEXT_PUBLIC_GA_ID || '',
+  VK_PIXEL_ID: process.env.NEXT_PUBLIC_VK_PIXEL_ID || '',
 } as const
 
 export type EnvironmentConfig = typeof ENVIRONMENT_CONFIG

@@ -5,6 +5,7 @@ import { Toaster } from 'react-hot-toast'
 
 import { Dialog, Modal, ToastCard } from '@/shared'
 
+import { AnalyticsProvider } from './AnalyticsProvider'
 import { MaintenanceGuard } from './MaintenanceGuard'
 import { ReactQueryProvider } from './ReactQueryProvider'
 import { SessionInitializer } from './SessionInitializer'
@@ -12,6 +13,8 @@ import { SessionInitializer } from './SessionInitializer'
 export const PlatformContainer: FC<PropsWithChildren> = ({ children }) => {
   return (
     <ReactQueryProvider>
+      <AnalyticsProvider />
+
       <SessionInitializer />
 
       <MaintenanceGuard>

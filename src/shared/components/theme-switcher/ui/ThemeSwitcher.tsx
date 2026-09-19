@@ -1,18 +1,19 @@
 'use client'
 
-import type { FC } from 'react'
+import { type FC, use } from 'react'
+import { browser } from 'react-dom'
 import { Moon, Sun } from 'lucide-react'
 
-import { useMounted } from '@/shared'
 import { Button } from '@/shared/ui/shadcn'
 
 import { useThemeStore } from '../model/store'
 
 export const ThemeSwitcher: FC = () => {
-  const { theme, toggleTheme } = useThemeStore()
-  const mounted = useMounted()
+  use(browser())
+  const theme = useThemeStore((s) => s.theme)
+  const toggleTheme = useThemeStore((s) => s.toggleTheme)
 
-  const isDark = mounted && theme === 'dark'
+  const isDark = theme === 'dark'
 
   return (
     <Button

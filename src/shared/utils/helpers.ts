@@ -97,12 +97,14 @@ export const formatDate = (value: FormatDateValue, options: FormatDateOptions = 
  * @returns строку с описанием ошибки */
 export const getErrorMessage = (error: unknown, fallback: string = 'Произошла ошибка'): string => {
   if (isAxiosError<{ message?: string | string[] }>(error)) {
+    if (error.response?.status === 429) {
+      return 'У вас слишком большие запросы!'
+    }
+
     const data = error.response?.data
-    if (data && data.message) {
-      if (Array.isArray(data.message)) {
-        return data.message.join('. ')
-      }
-      return data.message
+
+    if (data?.message) {
+      return Array.isArray(data.message) ? data.message.join('. ') : data.message
     }
   }
 
@@ -170,4 +172,103 @@ export const formatMoney = (amount: string | number | null | undefined): string 
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   }).format(Number(amount))
+}
+
+/**
+ * Склонение существительных по числительным для русского языка.
+ * @param count Количество (например, 1, 2, 5)
+ * @param one Форма для 1 (например, 'курс', 'заказ', 'рассылка')
+ * @param few Форма для 2, 3, 4 (например, 'курса', 'заказа', 'рассылки')
+ * @param many Форма для 5-20, 0 (например, 'курсов', 'заказов', 'рассылок')
+ * @returns Правильное окончание слова
+ * @example pluralize(1, 'курс', 'курса', 'курсов') => 'курс'
+ * @example pluralize(4, 'курс', 'курса', 'курсов') => 'курса'
+ * @example pluralize(5, 'курс', 'курса', 'курсов') => 'курсов'
+ */
+export const pluralize = (count: number, one: string, few: string, many: string): string => {
+  const abs = Math.abs(count) % 100
+  const lastDigit = abs % 10
+
+  if (abs > 10 && abs < 20) {
+    return many
+  }
+  if (lastDigit > 1 && lastDigit < 5) {
+    return few
+  }
+  if (lastDigit === 1) {
+    return one
+  }
+  return many
+}
+
+/**
+ * Форматирование числа вместе с правильным склонением слова.
+ * @example formatPlural(5, 'курс', 'курса', 'курсов') => '5 курсов'
+ */
+export const formatPlural = (count: number, one: string, few: string, many: string): string => {
+  return `${count} ${pluralize(count, one, few, many)}`
+}
+
+/**
+ * Получение заглавных инициалов из имени/строки
+ * @param name имя или название (например, "Иван Иванов" -> "ИИ", "Алексей" -> "А")
+ * @param fallback значение по умолчанию, если имя пустое (по умолчанию 'A')
+ * @param limit максимальная длина инициалов (по умолчанию 2)
+ */
+export const getInitials = (name?: string | null, fallback = 'A', limit = 2): string => {
+  if (!name?.trim()) return fallback
+
+  const parts = name.trim().split(/\s+/).filter(Boolean)
+
+  if (parts.length === 0) return fallback
+
+  return parts
+    .map((part) => part[0])
+    .join('')
+    .slice(0, limit)
+    .toUpperCase()
+}
+
+/** Безопасная проверка окружения исполнения в браузере (SSR-safe) */
+export const isBrowser = (): boolean => typeof window !== 'undefined'
+
+export interface NormalizedAnalyticsUrl {
+  /** Полный абсолютный URL */
+  fullUrl: string
+  /** Относительный путь со строкой запроса */
+  pathname: string
+  /** Базовый origin домена */
+  origin: string
+}
+
+/**
+ * Безопасная нормализация URL для систем аналитики (GA4, Яндекс Метрика, VK).
+ * Предотвращает дублирование origin и разделяет URL на fullUrl, pathname и origin.
+ */
+export const normalizeAnalyticsUrl = (url?: string | null): NormalizedAnalyticsUrl => {
+  const browserOrigin = isBrowser() ? window.location.origin : ''
+
+  if (!url) {
+    return { fullUrl: browserOrigin, pathname: '/', origin: browserOrigin }
+  }
+
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    try {
+      const parsed = new URL(url)
+      return {
+        fullUrl: url,
+        pathname: `${parsed.pathname}${parsed.search}`,
+        origin: parsed.origin,
+      }
+    } catch {
+      return { fullUrl: url, pathname: url, origin: browserOrigin }
+    }
+  }
+
+  const cleanPath = url.startsWith('/') ? url : `/${url}`
+  return {
+    fullUrl: browserOrigin ? `${browserOrigin}${cleanPath}` : cleanPath,
+    pathname: cleanPath,
+    origin: browserOrigin,
+  }
 }
